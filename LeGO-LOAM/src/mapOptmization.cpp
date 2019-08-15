@@ -146,6 +146,8 @@ private:
     pcl::PointCloud<PointType>::Ptr globalMapKeyFrames;
     pcl::PointCloud<PointType>::Ptr globalMapKeyFramesDS;
 
+    pcl::PointCloud<PointType>::Ptr globalMapOriginalSize;
+
     std::vector<int> pointSearchInd;
     std::vector<float> pointSearchSqDis;
 
@@ -218,6 +220,7 @@ private:
     float cRoll, sRoll, cPitch, sPitch, cYaw, sYaw, tX, tY, tZ;
     float ctRoll, stRoll, ctPitch, stPitch, ctYaw, stYaw, tInX, tInY, tInZ;
 
+    int frame_count;
 public:
 
     
@@ -225,6 +228,7 @@ public:
     mapOptimization():
         nh("~")
     {
+        frame_count = 0;
     	ISAM2Params parameters;
 		parameters.relinearizeThreshold = 0.01;
 		parameters.relinearizeSkip = 1;
@@ -309,6 +313,7 @@ public:
         globalMapKeyPosesDS.reset(new pcl::PointCloud<PointType>());
         globalMapKeyFrames.reset(new pcl::PointCloud<PointType>());
         globalMapKeyFramesDS.reset(new pcl::PointCloud<PointType>());
+        globalMapOriginalSize.reset(new pcl::PointCloud<PointType>());
 
         timeLaserCloudCornerLast = 0;
         timeLaserCloudSurfLast = 0;
@@ -615,6 +620,8 @@ public:
         laserCloudCornerLast->clear();
         pcl::fromROSMsg(*msg, *laserCloudCornerLast);
         newLaserCloudCornerLast = true;
+
+        
     }
 
     void laserCloudSurfLastHandler(const sensor_msgs::PointCloud2ConstPtr& msg){
@@ -759,7 +766,8 @@ public:
         }
 	    // downsample visualized points
         downSizeFilterGlobalMapKeyFrames.setInputCloud(globalMapKeyFrames);
-        downSizeFilterGlobalMapKeyFrames.filter(*globalMapKeyFramesDS);
+        // downSizeFilterGlobalMapKeyFrames.filter(*globalMapKeyFramesDS);
+        *globalMapKeyFramesDS = *globalMapKeyFrames;
  
         sensor_msgs::PointCloud2 cloudMsgTemp;
         pcl::toROSMsg(*globalMapKeyFramesDS, cloudMsgTemp);
@@ -1465,6 +1473,8 @@ public:
             newLaserCloudOutlierLast && std::abs(timeLaserCloudOutlierLast - timeLaserOdometry) < 0.005 &&
             newLaserOdometry)
         {
+            std::cout << frame_count << std::endl;
+        frame_count++;
 
             newLaserCloudCornerLast = false; newLaserCloudSurfLast = false; newLaserCloudOutlierLast = false; newLaserOdometry = false;
 

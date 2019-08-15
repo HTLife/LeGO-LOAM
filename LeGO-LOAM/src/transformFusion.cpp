@@ -61,6 +61,7 @@ private:
 
     std_msgs::Header currentHeader;
 
+    int frame_count;
 public:
 
     TransformFusion(){
@@ -89,6 +90,8 @@ public:
             transformBefMapped[i] = 0;
             transformAftMapped[i] = 0;
         }
+
+        frame_count = 0;
     }
 
     void transformAssociateToMap()
@@ -208,6 +211,9 @@ public:
         laserOdometry2.pose.pose.position.y = transformMapped[4];
         laserOdometry2.pose.pose.position.z = transformMapped[5];
         pubLaserOdometry2.publish(laserOdometry2);
+
+        std::cout << frame_count << std::endl;
+        frame_count++;
 
         laserOdometryTrans2.stamp_ = laserOdometry->header.stamp;
         laserOdometryTrans2.setRotation(tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w));
